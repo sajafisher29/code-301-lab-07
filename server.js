@@ -7,6 +7,11 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+//Code review: API routes
+app.get('/location', locationIdentify);
+app.get('/weather', weatherIdentify);
+
+//Code review: Constructor functions
 function Location(query, geoData) { 
   this.city_query = query;
   this.latitude = geoData.results[0].geometry.location.lat;
@@ -18,8 +23,8 @@ function Weather(forecast, time) {
   this.time = time;
 }
 
-//Code review: API routes
-app.get('/location', (req, res) => { 
+//Code review: Helper functions
+function locationIdentify(req, res) { 
   try { 
     if (req.query.data === 'Lynnwood') {
       const geoData = require('./data/geo.json');
@@ -32,9 +37,9 @@ app.get('/location', (req, res) => {
   catch (err) { 
     res.status(500).send('Sorry, something went wrong');
   }
-});
+}
 
-app.get('/weather', (req, res) => {
+function weatherIdentify(req, res) {
   try {
     if (req.query.data === 'Lynnwood') {
       const weatherArr = [];
@@ -51,7 +56,7 @@ app.get('/weather', (req, res) => {
   catch(err) { 
     res.status(500).send('Sorry, something went wrong');
   }
-})
+}
 
 app.listen(PORT, () => { 
   console.log('Listening to PORT: ' + PORT);
