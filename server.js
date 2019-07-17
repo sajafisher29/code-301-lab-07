@@ -1,6 +1,9 @@
 'use strict';
 
+//Code review: Application dependencies
 const express = require('express');
+
+//Code review: Application setup
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -15,6 +18,7 @@ function Weather(forecast, time) {
   this.time = time;
 }
 
+//Code review: API routes
 app.get('/location', (req, res) => { 
   try { 
     if (req.query.data === 'Lynnwood') {
@@ -36,8 +40,9 @@ app.get('/weather', (req, res) => {
       const weatherArr = [];
       const darkskyData = require('./data/darksky.json');
       darkskyData.daily.data.forEach( day => {
-        weatherArr.push(new Weather(day.summary, new Date(day.time).toString()));
+        weatherArr.push(new Weather(day.summary, new Date(day.time * 1000).toDateString()));
       })
+      //Code review: Adjusted the date formula to correctly show the date without time. Previously showing all the same day.
       res.send(weatherArr);
     } else { 
       res.status(500).send('Sorry, something went wrong');
