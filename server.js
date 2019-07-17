@@ -1,54 +1,63 @@
 'use strict';
 
-//Code review: Application dependencies
+//Load environment variables from the dotenv file
+require('dotenv').config();
+
+//Application dependencies
 const express = require('express');
+const cors = require('cors');
+const superagent = require('superagent');
 
-//Code review: Application setup
-const app = express();
+//Application setup
 const PORT = process.env.PORT || 3000;
+const app = express();
+app.use(cors());
 
-//Code review: API routes
+//API routes
 app.get('/location', locationIdentify);
 app.get('/weather', weatherIdentify);
 
-//Code review: Constructor functions
-function Location(query, geoData) { 
+//Constructor functions
+function Location(query, res) { 
   this.city_query = query;
-  this.latitude = geoData.results[0].geometry.location.lat;
-  this.longitude = geoData.results[0].geometry.location.lng;
+  this.formattedQuery = res.results[0].formatted_address;
+  this.latitude = res.results[0].geometry.location.lat;
+  this.longitude = res.results[0].geometry.location.lng;
 }
 
-function Weather(forecast, time) {
+function Weather(day) {
   this.forecast = day.summary;
   this.time = new Date(day.time * 1000).toDateString();
 }
-//Code review: Adjusted the date formula to correctly show the date without time. Previously showing all the same day.
 
-//Code review: Helper functions
+//Helper functions
 function locationIdentify(req, res) { 
-  try { 
-    if (req.query.data === 'Lynnwood') {
-      const geoData = require('./data/geo.json');
-      const user_location = new Location(req.query.data, geoData);
-      res.send(user_location);
-    } else { 
-      res.status(500).send('Sorry, something went wrong');
-    }
-  }
-  catch (err) { 
-    res.status(500).send('Sorry, something went wrong');
-  }
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${req.query.data}&key=${process.env.GEOCODE_API_KEY}`
+  
+  return superagent.get(url)
+    .then (res => {
+      const location = new Location(req.query.data, JSON.parse(res.text));
+      res.send(location);
+    })
+    .catch (err => {
+      res.send(err);
+    })
 }
 
 function weatherIdentify(req, res) {
-  if (req.query.data === 'Lynnwood') {
-      const weatherArr = [];
-      const darkskyData = require('./data/darksky.json');
-      const weatherEntries = darkskyData.body.daily.data.map(day => {return darkskyData.send(weatherArr);}
-  } else { 
-    res.status(500).send('Sorry, something went wrong');
-    } 
-};
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${req.query.data.latitude},${req.query.data.longitude}`
 
-//Code review: make sure the server is listening for requests
+  return superagent.get(url)
+    .then (res => {
+      const weatherEntries = res.body.daily.map(day => {
+        return new Weather(day);
+      })
+      res.send(weatherEntries);
+    })
+    .catch (err => {
+      res.send(err);
+    })
+}
+
+//Make sure the server is listening for requests
 app.listen(PORT, () => console.log(`Listening to PORT: ${PORT}`));
