@@ -58,6 +58,5 @@ function weatherIdentify(req, res) {
   }
 }
 
-app.listen(PORT, () => { 
-  console.log('Listening to PORT: ' + PORT);
-})
+//Code review: make sure the server is listening for requests
+app.listen(PORT, () => console.log(`Listening to PORT: ${PORT}`));
