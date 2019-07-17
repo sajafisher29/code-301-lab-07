@@ -19,9 +19,10 @@ function Location(query, geoData) {
 }
 
 function Weather(forecast, time) {
-  this.forecast = forecast;
-  this.time = time;
+  this.forecast = day.summary;
+  this.time = new Date(day.time * 1000).toDateString();
 }
+//Code review: Adjusted the date formula to correctly show the date without time. Previously showing all the same day.
 
 //Code review: Helper functions
 function locationIdentify(req, res) { 
@@ -40,23 +41,14 @@ function locationIdentify(req, res) {
 }
 
 function weatherIdentify(req, res) {
-  try {
-    if (req.query.data === 'Lynnwood') {
+  if (req.query.data === 'Lynnwood') {
       const weatherArr = [];
       const darkskyData = require('./data/darksky.json');
-      darkskyData.daily.data.forEach( day => {
-        weatherArr.push(new Weather(day.summary, new Date(day.time * 1000).toDateString()));
-      })
-      //Code review: Adjusted the date formula to correctly show the date without time. Previously showing all the same day.
-      res.send(weatherArr);
-    } else { 
-      res.status(500).send('Sorry, something went wrong');
-    }  
-  } 
-  catch(err) { 
+      const weatherEntries = darkskyData.body.daily.data.map(day => {return darkskyData.send(weatherArr);}
+  } else { 
     res.status(500).send('Sorry, something went wrong');
-  }
-}
+    } 
+};
 
 //Code review: make sure the server is listening for requests
 app.listen(PORT, () => console.log(`Listening to PORT: ${PORT}`));
