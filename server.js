@@ -1,7 +1,7 @@
 'use strict';
 
 //Load environment variables from the dotenv file
-require('dotenv').config();
+require('.env').config();
 
 //Application dependencies
 const express = require('express');
@@ -18,7 +18,7 @@ app.get('/location', locationIdentify);
 app.get('/weather', weatherIdentify);
 
 //Constructor functions
-function Location(query, res) { 
+function Location(query, res) {
   this.city_query = query;
   this.formattedQuery = res.results[0].formatted_address;
   this.latitude = res.results[0].geometry.location.lat;
@@ -33,7 +33,7 @@ function Weather(day) {
 //Helper functions
 function locationIdentify(req, res) { 
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${req.query.data}&key=${process.env.GEOCODE_API_KEY}`
-  
+
   return superagent.get(url)
     .then (res => {
       const location = new Location(req.query.data, JSON.parse(res.text));
